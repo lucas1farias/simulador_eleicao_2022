@@ -24,9 +24,14 @@ class Election:
 
     # Uso em: [def show_partial_result, def show_final_election_status]
     def show_current_election_status(self, show_votes=False):
-        absolute_freq = sum([key['votes'] for key in self.politicians])
+
+        Election.absolute_freq = sum([key['votes'] for key in self.politicians])
+        # for key in self.politicians:
+        #     print(key['votes'])
+        # print('----->', absolute_freq)
 
         if not show_votes:
+
             # Nome do político, porcentagem do político
             current_percentages = []
             for index, data in enumerate(self.numbers):
@@ -34,7 +39,7 @@ class Election:
                 current_percentages.append(
                     (
                         self.politicians[index]['politician'],
-                        float((self.politicians[index]["votes"] * 100) / absolute_freq)
+                        float((self.politicians[index]["votes"] * 100) / Election.absolute_freq)
                     )
                 )
 
@@ -44,11 +49,11 @@ class Election:
             return sorted_current_percentages
 
         if show_votes:
-            return absolute_freq
+            return Election.absolute_freq
 
     # Usado ao final do algoritmo
     def show_final_election_status(self):
-        absolute_freq = sum([key['votes'] for key in self.politicians])
+        Election.absolute_freq = sum([key['votes'] for key in self.politicians])
         report = f'\n{self.indent}========== RESULTADO =========='
         computed_votes = f"{self.indent}{self.show_current_election_status(show_votes=True)} votos computados"
 
@@ -59,7 +64,7 @@ class Election:
                 (
                     self.politicians[index]['politician'],
                     self.politicians[index]['votes'],
-                    float((self.politicians[index]["votes"] * 100) / absolute_freq)
+                    float((self.politicians[index]["votes"] * 100) / Election.absolute_freq)
                 )
             )
 
@@ -165,8 +170,8 @@ class Election:
         if winner > 0 and not draw_happened[0]:
 
             # Adquirir a porcentagem p/ exibir no print
-            absolute_freq = sum([key['votes'] for key in self.politicians])
-            winner_percentage = f'[ {float((self.politicians[winner_index]["votes"] * 100) / absolute_freq):.2f}% ]'
+            Election.absolute_freq = sum([key['votes'] for key in self.politicians])
+            winner_percentage = f'[ {float((self.politicians[winner_index]["votes"] * 100) / Election.absolute_freq):.2f}% ]'
 
             # Mostrar o vencedor ("winner_index" acerta pois "len(self.politicians_names) == len(candidates_votes)")
             print(self.messages['winner'].format(
@@ -251,47 +256,50 @@ class Election:
         # "def hacker" (é provável que uma var de classe possa substituir isso)
         self.false_number = None
 
-        while Election.loop_counter < self.max_votes:
+        # Adicionado por último, por estar gerando um erro que eu não sei como resolver (ver except abaixo)
+        try:
 
-            "NESTA VERSÃO DO ALGORITMO, O INPUT É SUBSTITUÍDO POR UM VALOR FIXO"
-            # Coletar o dado de voto do usuário
-            self.vote = 22
-            self.vote_int = self.vote
+            while Election.loop_counter < self.max_votes:
 
-            # Encerrar algoritmo
-            if self.vote == '0':
-                self.show_result()
-                exit(0)
+                "NESTA VERSÃO DO ALGORITMO, O INPUT É SUBSTITUÍDO POR UM VALOR FIXO"
+                # Coletar o dado de voto do usuário
+                self.vote_int = 12
 
-            # O usuário fornece um número de candidato correto
-            if self.vote_int in self.numbers:
+                # O usuário fornece um número de candidato correto
+                if self.vote_int in self.numbers:
 
-                # ========== HACKER LIGADO ========== Voto computado (chance muita baixa de computação correta)
-                if self.cheat_mode:
-                    self.hacker()
-                    self.partial_result()
+                    # ========== HACKER LIGADO ========== Voto computado (chance muita baixa de computação correta)
+                    if self.cheat_mode:
+                        self.hacker()
+                        self.partial_result()
 
-                # ========== HACKER DESLIGADO ========== Voto computado corretamente
+                    # ========== HACKER DESLIGADO ========== Voto computado corretamente
+                    else:
+                        # "index" acessa o índice do candidato certo
+                        # "number" compara o voto passado por input com o número dos políticos
+                        for index, number in enumerate(self.politicians_numbers):
+                            if self.vote_int == number:
+                                self.politicians[index]["votes"] += 1
+
+                        # Exibe a contagem de votos atual
+                        self.partial_result()
+
+                # O usuário não fornece um número de candidato correto
                 else:
-                    # "index" acessa o índice do candidato certo
-                    # "number" compara o voto passado por input com o número dos políticos
-                    for index, number in enumerate(self.politicians_numbers):
-                        if self.vote_int == number:
-                            self.politicians[index]["votes"] += 1
+                    print(self.messages['input_error'])
+                    input(self.messages['new_attempt'])
 
-                    # Exibe a contagem de votos atual
-                    self.partial_result()
+                # O 'if' não é necessário, está aqui apenas como referência para saber onde acaba
+                if Election.loop_counter >= self.max_votes:
+                    self.show_result()
+                    self.show_final_election_status()
 
-            # O usuário não fornece um número de candidato correto
-            else:
-                print(self.messages['input_error'])
-                input(self.messages['new_attempt'])
-
-            # O 'if' não é necessário, está aqui apenas como referência para saber onde acaba
-            if Election.loop_counter >= self.max_votes:
-                self.show_result()
-                self.show_final_election_status()
+        # Ao executar este arquivo algumas vezes, ele gera este erro (dependendo da sorte)
+        # O problema têm a ver com "Election.absolute_freq", que não recebe o valor esperado (!= 0, seu valor inicial)
+        # [SOLUÇÃO]: Reiniciar o algoritmo
+        except ZeroDivisionError:
+            self.__init__(benefited="Luís Inácio Lula da Silva", max_votes=1_000, cheat_mode=True)
 
 
 if __name__ == '__main__':
-    algorithm = Election(benefited="Luís Inácio Lula da Silva", max_votes=1_000, cheat_mode=True)
+    algorithm = Election(benefited="Luís Inácio Lula da Silva", max_votes=1_000_000, cheat_mode=True)

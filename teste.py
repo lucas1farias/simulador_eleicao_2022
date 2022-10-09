@@ -14,3 +14,5 @@ politicians = [
     {"politician": "Soraya Thronicke", "id": 44, "votes": 0},
     {"politician": "Vera Lúcia", "id": 16, "votes": 0},
 ]
+
+print(int(0))
