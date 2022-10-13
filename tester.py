@@ -24,7 +24,6 @@ class Election:
 
     # Uso em: [def show_partial_result, def show_final_election_status]
     def show_current_election_status(self, show_votes=False):
-
         Election.absolute_freq = sum([key['votes'] for key in self.politicians])
         # for key in self.politicians:
         #     print(key['votes'])
@@ -54,8 +53,9 @@ class Election:
     # Usado ao final do algoritmo
     def show_final_election_status(self):
         Election.absolute_freq = sum([key['votes'] for key in self.politicians])
-        report = f'\n{self.indent}========== RESULTADO =========='
-        computed_votes = f"{self.indent}{self.show_current_election_status(show_votes=True)} votos computados"
+        votes_so_far = self.show_current_election_status(show_votes=True)
+        report = f'\n{self.p}========== RESULTADO =========='
+        computed_votes = f"{self.p}{votes_so_far} votos computados"
 
         # [(Nome do político, votos computados ao político, porcentagem dos votos do político), ...]
         current_percentages = []
@@ -73,15 +73,17 @@ class Election:
 
         print(report)
         print(computed_votes)
-        # Porcentagem dos votos do político, votos computados ao político, nome do político (organizados)
         for tuple_ in sorted_current_percentages:
-            print(f"{self.indent}[ {f'{tuple_[2]:.2f}'}% ] [ {tuple_[1]} votos ] {tuple_[0]}")
+            politician_percentage = tuple_[2]
+            politician_votes = tuple_[1]
+            politician_name = tuple_[0]
+            print(f"{self.p}[ {f'{politician_percentage:.2f}'}% ] [ {politician_votes} votos ] {politician_name}")
 
     # Função usada quando o parâmetro "cheat_mode=True"
     def hacker(self):
 
         # A var é modificada aqui. Se for feito direto em __init__, não funcionará (foi testado)
-        self.false_number = choice([*range(-2, 13)])
+        self.false_number = choice([*range(-2, 11)])
 
         # Quantas vezes o loop abaixo será executado
         n_repetitions = len(self.politicians_names)
@@ -115,7 +117,7 @@ class Election:
                 self.politicians[random_politician_index]["votes"] += 1
                 Election.loop_counter += 1
 
-        # TODO: Voto ao alvo beneficiado injustamente (9 ao 12) (parâmetro "politician")
+        # TODO: Voto ao alvo beneficiado injustamente (10) (parâmetro "politician")
         if self.false_number > 9:
             # Achar o político via chave == parâmetro passado (candidato beneficiado pelo hacker)
             for index, data in enumerate(self.politicians):
@@ -123,18 +125,20 @@ class Election:
                     self.politicians[index]["votes"] += 1
                     Election.loop_counter += 1
 
-    def partial_result(self):
-        banner = f'{self.indent}VOTOS COMPUTADOS: {self.show_current_election_status(show_votes=True)} votos'
-
-        print(banner)
-        print(f'{self.indent}========== CANDIDATOS ==========')
-        for tuple_ in self.show_current_election_status():
-            # Porcentagem do candidato e nome do candidato
-            print(f"{self.indent}[ {f'{tuple_[1]:.2f}'}% ] {tuple_[0]}")
-        print('\n')
-
-        "REMOVIDO NESTE ALGORITMO PARA QUE O LOOP FUNCIONE LIVREMENTE"
-        # input(self.messages['keep_voting'])
+    "REMOVIDO"
+    # def partial_result(self):
+    #     votes_so_far = self.show_current_election_status(show_votes=True)
+    #     election_panel = self.show_current_election_status()
+    #     banner = f'{self.p}VOTOS COMPUTADOS: {votes_so_far} votos'
+    #     label = f'{self.p}========== CANDIDATOS =========='
+    #
+    #     print(banner)
+    #     print(label)
+    #     for tuple_ in election_panel:
+    #         politician_percentage = tuple_[1]
+    #         politician_name = tuple_[0]
+    #         print(f"{self.p}[ {f'{politician_percentage:.2f}'}% ] {politician_name}")
+    #     print('\n')
 
     def show_result(self):
         # Inserção das vars que receberão os votos de cada político em um array
@@ -175,8 +179,8 @@ class Election:
 
             # Mostrar o vencedor ("winner_index" acerta pois "len(self.politicians_names) == len(candidates_votes)")
             print(self.messages['winner'].format(
-                indent=self.indent,
-                indent2=self.indent,
+                indent=self.p,
+                indent2=self.p,
                 index_politician_name=self.politicians_names[winner_index],
                 number_of_votes=winner,
                 percentage=winner_percentage)
@@ -197,7 +201,7 @@ class Election:
         "APENAS PARA ESSA VERSÃO DO ALGORITMO"
         self.max_votes = max_votes
 
-        self.indent = '        '
+        self.p = '        '
 
         self.politicians = [
             {"politician": "Ciro Gomes", "id": 12, "votes": 0},
@@ -244,62 +248,59 @@ class Election:
         Digite após a seta -> """
 
         self.messages = {
-            'what_is_your_vote': f'\n{self.indent}{f"Qual o seu voto para presidente?".upper()} {self.menu}',
-            'input_error': f'\n{self.indent}Comando inválido: digitar "0" ou o número dos candidatos no MENU',
-            'new_attempt': f'{self.indent}PRESSIONE ENTER PARA TENTAR NOVAMENTE',
-            'keep_voting': f'{self.indent}PRESSIONE ENTER PARA CONTINUAR VOTANDO',
+            'what_is_your_vote': f'\n{self.p}{f"Qual o seu voto para presidente?".upper()} {self.menu}',
+            'input_error': f'\n{self.p}Comando inválido: digitar "0" ou o número dos candidatos no MENU',
+            'new_attempt': f'{self.p}PRESSIONE ENTER PARA TENTAR NOVAMENTE',
+            'keep_voting': f'{self.p}PRESSIONE ENTER PARA CONTINUAR VOTANDO',
             'winner': '\n{indent}===== VENCEDOR =====\n{indent2}{index_politician_name} / {number_of_votes} votos / {percentage}',
-            'no_votes': '\n===== OBS =====\nNão há vencedores, pois não há votos computados.',
-            'draw': '\n===== OBS =====\nEmpate entre candidatos. Eleição cancelada!'
+            'no_votes': '\n===== AVISO =====\nNão há vencedores, pois não há votos computados.',
+            'draw': f'\n{self.p}===== AVISO =====\n{self.p}Empate entre candidatos. Eleição cancelada!'
         }
 
         # "def hacker" (é provável que uma var de classe possa substituir isso)
         self.false_number = None
 
         # Adicionado por último, por estar gerando um erro que eu não sei como resolver (ver except abaixo)
-        try:
 
-            while Election.loop_counter < self.max_votes:
+        while Election.loop_counter < self.max_votes:
 
-                "NESTA VERSÃO DO ALGORITMO, O INPUT É SUBSTITUÍDO POR UM VALOR FIXO"
-                # Coletar o dado de voto do usuário
-                self.vote_int = 12
+            "NESTA VERSÃO DO ALGORITMO, O INPUT É SUBSTITUÍDO POR UM VALOR FIXO"
+            # Coletar o dado de voto do usuário
+            self.vote_int = 12
 
-                # O usuário fornece um número de candidato correto
-                if self.vote_int in self.numbers:
+            # O usuário fornece um número de candidato correto
+            if self.vote_int in self.numbers:
 
-                    # ========== HACKER LIGADO ========== Voto computado (chance muita baixa de computação correta)
-                    if self.cheat_mode:
-                        self.hacker()
-                        self.partial_result()
+                # ========== HACKER LIGADO ========== Voto computado (chance muita baixa de computação correta)
+                if self.cheat_mode:
+                    self.hacker()
+                    # self.partial_result()
 
-                    # ========== HACKER DESLIGADO ========== Voto computado corretamente
-                    else:
-                        # "index" acessa o índice do candidato certo
-                        # "number" compara o voto passado por input com o número dos políticos
-                        for index, number in enumerate(self.politicians_numbers):
-                            if self.vote_int == number:
-                                self.politicians[index]["votes"] += 1
-
-                        # Exibe a contagem de votos atual
-                        self.partial_result()
-
-                # O usuário não fornece um número de candidato correto
+                # ========== HACKER DESLIGADO ========== Voto computado corretamente
                 else:
-                    print(self.messages['input_error'])
-                    input(self.messages['new_attempt'])
+                    # SUPOSIÇÕES [self.vote_int = 12] [self.politicians_numbers = [vários números]]
+                    # "index" é o monitor do índice entre [self.vote_int] e [self.politicians_numbers]
+                    # Em algum momento, o número [self.vote_int] acha o número em [self.politicians_numbers]
+                    # Quando achar, é pelo "index" que o voto é computado corretamente
+                    for index, number in enumerate(self.politicians_numbers):
+                        if self.vote_int == number:
+                            self.politicians[index]["votes"] += 1
 
-                # O 'if' não é necessário, está aqui apenas como referência para saber onde acaba
-                if Election.loop_counter >= self.max_votes:
+                    # Exibe a contagem de votos atual
+                    Election.loop_counter += 1
                     self.show_result()
                     self.show_final_election_status()
 
-        # Ao executar este arquivo algumas vezes, ele gera este erro (dependendo da sorte)
-        # O problema têm a ver com "Election.absolute_freq", que não recebe o valor esperado (!= 0, seu valor inicial)
-        # [SOLUÇÃO]: Reiniciar o algoritmo
-        except ZeroDivisionError:
-            self.__init__(benefited="Luís Inácio Lula da Silva", max_votes=1_000, cheat_mode=True)
+            # O usuário não fornece um número de candidato correto
+            else:
+                print(self.messages['input_error'])
+                input(self.messages['new_attempt'])
+
+            # O 'if' não é necessário, está aqui apenas como referência para saber onde acaba
+            if Election.loop_counter >= self.max_votes:
+                self.show_result()
+                self.show_final_election_status()
 
 
 if __name__ == '__main__':
-    algorithm = Election(benefited="Luís Inácio Lula da Silva", max_votes=1_000_000, cheat_mode=True)
+    algorithm = Election(benefited="Luís Inácio Lula da Silva", max_votes=200_000, cheat_mode=True)

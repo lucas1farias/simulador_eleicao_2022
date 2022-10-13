@@ -1,6 +1,7 @@
 
 
 from random import choice
+from utils.functions import ink_random as ink
 
 
 class Election:
@@ -24,7 +25,7 @@ class Election:
 
     # Uso em: [def show_partial_result, def show_final_election_status]
     def show_current_election_status(self, show_votes=False):
-        absolute_freq = sum([key['votes'] for key in self.politicians])
+        Election.absolute_freq = sum([key['votes'] for key in self.politicians])
 
         if not show_votes:
             # Nome do político, porcentagem do político
@@ -34,7 +35,7 @@ class Election:
                 current_percentages.append(
                     (
                         self.politicians[index]['politician'],
-                        float((self.politicians[index]["votes"] * 100) / absolute_freq)
+                        float((self.politicians[index]["votes"] * 100) / Election.absolute_freq)
                     )
                 )
 
@@ -44,13 +45,14 @@ class Election:
             return sorted_current_percentages
 
         if show_votes:
-            return absolute_freq
+            return Election.absolute_freq
 
     # Usado ao final do algoritmo
     def show_final_election_status(self):
-        absolute_freq = sum([key['votes'] for key in self.politicians])
+        Election.absolute_freq = sum([key['votes'] for key in self.politicians])
+        votes_so_far = self.show_current_election_status(show_votes=True)
         report = f'\n{self.p}========== RESULTADO =========='
-        computed_votes = f"{self.p}{self.show_current_election_status(show_votes=True)} votos computados"
+        computed_votes = f"{self.p}{votes_so_far} votos computados"
 
         # [(Nome do político, votos computados ao político, porcentagem dos votos do político), ...]
         current_percentages = []
@@ -59,7 +61,7 @@ class Election:
                 (
                     self.politicians[index]['politician'],
                     self.politicians[index]['votes'],
-                    float((self.politicians[index]["votes"] * 100) / absolute_freq)
+                    float((self.politicians[index]["votes"] * 100) / Election.absolute_freq)
                 )
             )
 
@@ -68,9 +70,11 @@ class Election:
 
         print(report)
         print(computed_votes)
-        # Porcentagem dos votos do político, votos computados ao político, nome do político (organizados)
         for tuple_ in sorted_current_percentages:
-            print(f"{self.p}[ {f'{tuple_[2]:.2f}'}% ] [ {tuple_[1]} votos ] {tuple_[0]}")
+            politician_percentage = tuple_[2]
+            politician_votes = tuple_[1]
+            politician_name = tuple_[0]
+            print(f"{self.p}[ {f'{politician_percentage:.2f}'}% ] [ {politician_votes} votos ] {politician_name}")
 
     def ask_for_politician_number(self):
         try:
@@ -89,7 +93,7 @@ class Election:
     def hacker(self):
 
         # A var é modificada aqui. Se for feito direto em __init__, não funcionará (foi testado)
-        self.false_number = choice([*range(-2, 13)])
+        self.false_number = choice([*range(-2, 11)])
 
         # Quantas vezes o loop abaixo será executado
         n_repetitions = len(self.politicians_names)
@@ -123,7 +127,7 @@ class Election:
                 self.politicians[random_politician_index]["votes"] += 1
                 Election.loop_counter += 1
 
-        # TODO: Voto ao alvo beneficiado injustamente (7 ao 12) (parâmetro "politician")
+        # TODO: Voto ao alvo beneficiado injustamente (8 ao 10) (parâmetro "politician")
         if self.false_number > 7:
             # Achar o político via chave == parâmetro passado (candidato beneficiado pelo hacker)
             for index, data in enumerate(self.politicians):
@@ -131,19 +135,27 @@ class Election:
                     self.politicians[index]["votes"] += 1
                     Election.loop_counter += 1
 
-    def partial_result(self):
+    "REMOVIDO"
+    # def partial_result(self):
+    #     votes_so_far = self.show_current_election_status(show_votes=True)
+    #     election_panel = self.show_current_election_status()
+    #     banner = f'{self.p}VOTOS COMPUTADOS: {votes_so_far} votos'
+    #     label = f'{self.p}========== CANDIDATOS =========='
+    #
+    #     print(banner)
+    #     print(label)
+    #     for tuple_ in election_panel:
+    #         politician_percentage = tuple_[1]
+    #         politician_name = tuple_[0]
+    #         print(f"{self.p}[ {f'{politician_percentage:.2f}'}% ] {politician_name}")
+    #     print('\n')
+    #
+    #     input(self.messages['keep_voting'])
 
-        banner = f'\n{self.p}VOTOS COMPUTADOS: {self.show_current_election_status(show_votes=True)} votos'
-
-        print(banner)
-        print(f'{self.p}========== CANDIDATOS ==========')
-        for tuple_ in self.show_current_election_status():
-            # Porcentagem do candidato e nome do candidato
-            print(f"{self.p}[ {f'{tuple_[1]:.2f}'}% ] {tuple_[0]}")
-
-        "REMOVIDO NESTE ALGORITMO PARA QUE O LOOP FUNCIONE LIVREMENTE"
-        # input(self.messages['keep_voting'])
-
+    def next_vote(self):
+        votes_so_far = self.show_current_election_status(show_votes=True)
+        warning = f'{self.p}{votes_so_far} votos registrados até o momento'
+        print(warning)
         input(self.messages['keep_voting'])
 
     def show_result(self):
@@ -193,6 +205,7 @@ class Election:
 
         # Se há algum voto computado e se há empate (eleição cancelada)
         if winner > 0 and draw_happened[0]:
+            self.show_final_election_status()
             print(self.messages['draw'])
             exit(0)
 
@@ -275,18 +288,18 @@ class Election:
         ENCERRAR ELEIÇÃO: digite 0
 
         ========== CANDIDATOS ==========
-        12 || Ciro Gomes
-        27 || Eymael
-        30 || Felipe D'Avila
-        22 || Jair Messias Bolsonaro
-        80 || Leo Péricles
-        13 || Luís Inácio Lula da Silva
-        27 || Marina Silva
-        14 || Padre Kelmon
-        15 || Simone Tebet
-        21 || Sofia Manzano
-        44 || Soraya Thronicke
-        16 || Vera Lúcia
+        12 || {ink(txt="Ciro Gomes")}
+        27 || {ink(txt="Eymael")}
+        30 || {ink(txt="Felipe D'Avila")}
+        22 || {ink(txt="Jair Messias Bolsonaro")}
+        80 || {ink(txt="Leo Péricles")}
+        13 || {ink(txt="Luís Inácio Lula da Silva")}
+        27 || {ink(txt="Marina Silva")}
+        14 || {ink(txt="Padre Kelmon")}
+        15 || {ink(txt="Simone Tebet")}
+        21 || {ink(txt="Sofia Manzano")}
+        44 || {ink(txt="Soraya Thronicke")}
+        16 || {ink(txt="Vera Lúcia")}
         Digite após a seta -> """
 
         # Tratamentos e informações
@@ -297,7 +310,7 @@ class Election:
             'keep_voting': f'{self.p}PRESSIONE ENTER PARA CONTINUAR VOTANDO',
             'winner': '\n{indent}===== VENCEDOR =====\n{indent2}{index_politician_name} / {number_of_votes} votos / {percentage}',
             'no_votes': f'\n{self.p}===== ERRO =====\n{self.p}Não há vencedores, pois não há votos computados.',
-            'draw': '\n===== ERRO =====\nEmpate entre candidatos. Eleição cancelada!',
+            'draw': f'\n{self.p}===== AVISO =====\n{self.p}Empate entre candidatos. Eleição cancelada!',
             'wrong_vote_value': f'\n{self.p}========== ERRO ==========\n{self.p}Apenas números dos candidatos são permitidos'
         }
 
@@ -306,48 +319,45 @@ class Election:
 
         self.vote_int = None
 
-        try:
+        # O input principal, para funcionar corretamente, deve vir inicialmente, fora do loop
+        self.ask_for_politician_number()
 
-            # O input principal, para funcionar corretamente, deve vir inicialmente, fora do loop
-            self.ask_for_politician_number()
+        while True:
 
-            while True:
+            # Encerrar algoritmo
+            if self.vote_int == 0:
+                self.show_result()
+                self.show_final_election_status()
+                exit(0)
 
-                # Encerrar algoritmo
-                if self.vote_int == 0:
-                    self.show_result()
-                    self.show_final_election_status()
-                    exit(0)
+            # O usuário fornece um número de candidato correto
+            if self.vote_int in self.politicians_numbers:
 
-                # O usuário fornece um número de candidato correto
-                if self.vote_int in self.politicians_numbers:
-
-                    # ========== HACKER LIGADO ========== Voto computado (chance muita baixa de computação correta)
-                    if self.cheat_mode:
-                        self.hacker()
-                        self.partial_result()
-                        self.ask_for_politician_number()
-
-                    # ========== HACKER DESLIGADO ========== Voto computado corretamente
-                    else:
-                        # "index" acessa o índice do candidato certo
-                        # "number" compara o voto passado por input com o número dos políticos
-                        for index, number in enumerate(self.politicians_numbers):
-                            if self.vote_int == number:
-                                self.politicians[index]["votes"] += 1
-
-                        # Exibe a contagem de votos atual
-                        self.partial_result()
-                        self.ask_for_politician_number()
-
-                # TRATAMENTO: O usuário não fornece um número de candidato correto
-                else:
-                    print(self.messages['input_error'])
-                    input(self.messages['new_attempt'])
+                # ========== HACKER LIGADO ========== Voto computado (chance muita baixa de computação correta)
+                if self.cheat_mode:
+                    self.hacker()
+                    self.next_vote()
                     self.ask_for_politician_number()
 
-        except ZeroDivisionError:
-            self.__init__(benefited="Luís Inácio Lula da Silva", cheat_mode=True)
+                # ========== HACKER DESLIGADO ========== Voto computado corretamente
+                else:
+                    # SUPOSIÇÕES [self.vote_int = 12] [self.politicians_numbers = [vários números]]
+                    # "index" é o monitor do índice entre [self.vote_int] e [self.politicians_numbers]
+                    # Em algum momento, o número [self.vote_int] acha o número em [self.politicians_numbers]
+                    # Quando achar, é pelo "index" que o voto é computado corretamente
+                    for index, number in enumerate(self.politicians_numbers):
+                        if self.vote_int == number:
+                            self.politicians[index]["votes"] += 1
+
+                    # Exibe a contagem de votos atual
+                    self.next_vote()
+                    self.ask_for_politician_number()
+
+            # TRATAMENTO: O usuário não fornece um número de candidato correto
+            else:
+                print(self.messages['input_error'])
+                input(self.messages['new_attempt'])
+                self.ask_for_politician_number()
 
 
 if __name__ == '__main__':
